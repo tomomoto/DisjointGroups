@@ -9,14 +9,14 @@ import java.util.*;
  */
 public class ColumnsMap {
 
-    private int sizeOfGroupsWithSize1;
+    private int countOfGroupsWithSize1;
 
     Map<String, Collection<String>> column1Map;
     Map<String, Collection<String>> column2Map;
     Map<String, Collection<String>> column3Map;
 
     public ColumnsMap() {
-        sizeOfGroupsWithSize1 = 0;
+        countOfGroupsWithSize1 = 0;
         column1Map = new HashMap<>();
         column2Map = new HashMap<>();
         column3Map = new HashMap<>();
@@ -34,19 +34,24 @@ public class ColumnsMap {
         return column3Map;
     }
 
-    public Set<String> performDepthFirstSearch(String currentString, Set<String> ungroupedUqiqueLines, RemovedSet removedLines){
+    public int countOfGroupsWithSizeOne(){
+        return countOfGroupsWithSize1;
+    }
+
+    public Set<String> performDepthFirstSearch(String currentString, Set<String> unGroupedUniqueLines,
+                                               RemovedSet removedLines){
         Set<String> currentGroup = new HashSet<>();
-        boolean b1 = depthFirstBy1Column(currentGroup, currentString, ungroupedUqiqueLines, removedLines);
-        boolean b2 = depthFirstBy2Column(currentGroup, currentString, ungroupedUqiqueLines, removedLines);
-        boolean b3 = depthFirstBy3Column(currentGroup, currentString, ungroupedUqiqueLines, removedLines);
+        boolean b1 = depthFirstBy1Column(currentGroup, currentString, unGroupedUniqueLines, removedLines);
+        boolean b2 = depthFirstBy2Column(currentGroup, currentString, unGroupedUniqueLines, removedLines);
+        boolean b3 = depthFirstBy3Column(currentGroup, currentString, unGroupedUniqueLines, removedLines);
         if (b1 && b2 && b3){
-            sizeOfGroupsWithSize1++;
             currentGroup.add(currentString);
+            countOfGroupsWithSize1++;
         }
         return currentGroup;
     }
 
-    private boolean depthFirstBy1Column(Set<String> currentGroup, String currentString, Set<String> ungroupedUqiqueLines,
+    private boolean depthFirstBy1Column(Set<String> currentGroup, String currentString, Set<String> unGroupedUniqueLines,
                                                RemovedSet removedSet) {
         boolean needToAddToGroup=false;
         List<String> items = SmallParser.getStringsList(currentString);
@@ -60,15 +65,15 @@ public class ColumnsMap {
                 for (String str : strings) {
                     List<String> stringsList = SmallParser.getStringsList(str);
                     if (!removedSet.getRemovedBy2Column().contains(stringsList.get(1)))
-                        depthFirstBy2Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy2Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                     if (!removedSet.getRemovedBy3Column().contains(stringsList.get(2)))
-                        depthFirstBy3Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy3Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                 }
             }
         }
         return needToAddToGroup;
     }
-    private boolean depthFirstBy2Column(Set<String> currentGroup, String currentString, Set<String> ungroupedUqiqueLines,
+    private boolean depthFirstBy2Column(Set<String> currentGroup, String currentString, Set<String> unGroupedUniqueLines,
                                                RemovedSet removedSet) {
         boolean needToAddToGroup=false;
         List<String> items = SmallParser.getStringsList(currentString);
@@ -82,16 +87,16 @@ public class ColumnsMap {
                 for (String str : strings) {
                     List<String> stringsList = SmallParser.getStringsList(str);
                     if (!removedSet.getRemovedBy1Column().contains(stringsList.get(0)))
-                        depthFirstBy1Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy1Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                     if (!removedSet.getRemovedBy3Column().contains(stringsList.get(2)))
-                        depthFirstBy3Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy3Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                 }
             }
         }
         return needToAddToGroup;
     }
 
-    private boolean depthFirstBy3Column(Set<String> currentGroup, String currentString, Set<String> ungroupedUqiqueLines,
+    private boolean depthFirstBy3Column(Set<String> currentGroup, String currentString, Set<String> unGroupedUniqueLines,
                                                RemovedSet removedSet) {
         boolean needToAddToGroup = true;
         List<String> items = SmallParser.getStringsList(currentString);
@@ -105,9 +110,9 @@ public class ColumnsMap {
                 for (String str : strings) {
                     List<String> stringsList = SmallParser.getStringsList(str);
                     if (!removedSet.getRemovedBy2Column().contains(stringsList.get(1)))
-                        depthFirstBy2Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy2Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                     if (!removedSet.getRemovedBy1Column().contains(stringsList.get(0)))
-                        depthFirstBy1Column(currentGroup, str, ungroupedUqiqueLines, removedSet);
+                        depthFirstBy1Column(currentGroup, str, unGroupedUniqueLines, removedSet);
                 }
             }
         }

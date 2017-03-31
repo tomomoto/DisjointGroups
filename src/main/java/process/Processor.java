@@ -19,6 +19,10 @@ public class Processor {
         removedSet = new RemovedSet();
     }
 
+    public int countOfGroupsWithSizeOne(){
+        return columnsMap.countOfGroupsWithSizeOne();
+    }
+
     public List<Set<String>> performDivisionIntoDisjointGroups(Set<String> unGroupedUniqueLines) {
         columnsMap = buildColumnsMap(unGroupedUniqueLines);
         List<Set<String>> disjointGroups = new LinkedList<>();
