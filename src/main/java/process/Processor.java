@@ -29,7 +29,7 @@ public class Processor {
         for (Iterator<String> it = unGroupedUniqueLines.iterator(); it.hasNext(); ) {
             String currentString = it.next();
             it.remove();
-            Set<String> currentGroup = columnsMap.performDepthFirstSearch(currentString, unGroupedUniqueLines, removedSet);
+            Set<String> currentGroup = columnsMap.performDepthFirstSearch(currentString, removedSet);
             if (currentGroup.size() != 0)
                 disjointGroups.add(currentGroup);
         }
@@ -37,9 +37,9 @@ public class Processor {
         return disjointGroups;
     }
 
-    private ColumnsMap buildColumnsMap(Set<String> ungroupedUniqueLines) {
+    private ColumnsMap buildColumnsMap(Set<String> unGroupedUniqueLines) {
         ColumnsMap columnsMap = new ColumnsMap();
-        for (String line : ungroupedUniqueLines) {
+        for (String line : unGroupedUniqueLines) {
             List<String> items = SmallParser.getStringsList(line);
             String cell1 = items.get(0);
             if (!cell1.equals("")) {
