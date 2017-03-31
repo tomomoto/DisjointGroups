@@ -5,7 +5,7 @@ import utils.LittleChinaProgrammerLivesThere;
  */
 public class Main {
     public static void main(String[] args) {
-        LittleChinaProgrammerLivesThere.wakeUpAndWork("Lng-3.csv");
+        LittleChinaProgrammerLivesThere.wakeUpAndWork("Lng.csv");
     }
 
 }
