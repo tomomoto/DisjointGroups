@@ -1,7 +1,6 @@
 package utils;
 
-import model.ColumnsMap;
-import model.RemovedSet;
+import model.ParsedString;
 import process.Processor;
 
 import java.io.*;
@@ -15,16 +14,16 @@ public class LittleChinaProgrammerLivesThere {
     public static void wakeUpAndWork(String filePath) {
         System.out.print("Start parsing.");
         long startParsing = System.currentTimeMillis();
-        //TreeMap<Integer,String> hashMapInvalidStrings = new TreeMap<>();
+        TreeMap<Integer,String> hashMapInvalidStrings = new TreeMap<>();
         Set<String> invalidStrings = new HashSet<>();
-        Set<String> unGroupedUniqueLines = getUniqueLines(filePath, invalidStrings);
+        Set<ParsedString> unGroupedUniqueLines = getUniqueLines(filePath);
         long finishParsing = System.currentTimeMillis();
         float timeConsumedParsingSec = ((finishParsing - startParsing)/1000)%60;
         System.out.println(" Time = " + timeConsumedParsingSec + " seconds");
         Processor processor = new Processor();
         System.out.print("Start processing.");
         long startProcessing = System.currentTimeMillis();
-        List<Set<String>> disjointGroups = processor.performDivisionIntoDisjointGroups(unGroupedUniqueLines);
+        List<Set<ParsedString>> disjointGroups = processor.performDivisionIntoDisjointGroups(unGroupedUniqueLines);
         long finishProcessing = System.currentTimeMillis();
         float timeConsumedProcessingSec = ((finishProcessing - startProcessing)/1000)%60;
         //Выключил для повышения производительности
@@ -54,44 +53,102 @@ public class LittleChinaProgrammerLivesThere {
         }
     }
 
-    private static Set<String> getUniqueLines(String filePath,
-                                              //Map<Integer, String> mapInvalidStrings
-                                              Set<String> mapInvalidStrings) {
-        Set<String> uniqueLines = new HashSet<>();
+    private static Set<ParsedString> getUniqueLines(String filePath) {
         BufferedReader br = getBufferedReader(filePath);
-        parsing(uniqueLines, br, mapInvalidStrings);
+        Set<ParsedString> uniqueLines = parsing(br);
         bufferCloser(br);
         return uniqueLines;
     }
 
-    private static void parsing(Set<String> uniqueLines, BufferedReader br,
-                                //Map<Integer,String> mapInvalidStrings
-                                Set<String> mapInvalidStrings) {
+    private static Set<ParsedString> parsing(BufferedReader br) {
+        Set<ParsedString> uniqueLines = new HashSet<>();
         String line;
         int i = 1;
         try {
             while ((line = br.readLine()) != null) {
                 try {
-                    String parsedString = SmallParser.parse(line);
-                    boolean add = uniqueLines.add(parsedString);
-                    if (!add) {
-                        //Если невалидных строк очень много или вылетает исключание аутофмемориэррор,
-                        //Отключите добавление невалида для улучшения производительности
-                        //Здесь невалид строка является дублем.
-                        //mapInvalidStrings.put(i,"Duplicate: "+line);
-                        //mapInvalidStrings.add(line);
-                    }
+                    ParsedString parsedString = SmallParser.parse(line);
+                    uniqueLines.add(parsedString);
                 } catch (InvalidStringException e) {
                     //Здесь невалид строка не прошла парсинг.
-                    //mapInvalidStrings.add(line);
-                   // mapInvalidStrings.put(i,"Invalid line: "+line);
                 }
                 i++;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return uniqueLines;
     }
+
+    private static Set<ParsedString> getUniqueLines(String filePath, Set<String> setInvalidStrings) {
+        BufferedReader br = getBufferedReader(filePath);
+        Set<ParsedString> uniqueLines = parsing(br, setInvalidStrings);
+        bufferCloser(br);
+        return uniqueLines;
+    }
+
+    private static Set<ParsedString> getUniqueLines(String filePath, Map<Integer, String> mapInvalidStrings) {
+        BufferedReader br = getBufferedReader(filePath);
+        Set<ParsedString> uniqueLines = parsing(br, mapInvalidStrings);
+        bufferCloser(br);
+        return uniqueLines;
+    }
+
+    private static Set<ParsedString> parsing(BufferedReader br, Set<String> setInvalidStrings) {
+        Set<ParsedString> uniqueLines = new HashSet<>();
+        String line;
+        int i = 1;
+        try {
+            while ((line = br.readLine()) != null) {
+                try {
+                    ParsedString parsedString = SmallParser.parse(line);
+                    boolean add = uniqueLines.add(parsedString);
+                    if (!add) {
+                        //Здесь невалид строка является дублем.
+                        if (setInvalidStrings!=null)
+                            setInvalidStrings.add(line);
+                    }
+                } catch (InvalidStringException e) {
+                    //Здесь невалид строка не прошла парсинг.
+                    if (setInvalidStrings!=null)
+                        setInvalidStrings.add(line);
+                }
+                i++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return uniqueLines;
+    }
+
+    private static Set<ParsedString> parsing(BufferedReader br, Map<Integer,String> mapInvalidStrings) {
+        Set<ParsedString> uniqueLines = new HashSet<>();
+        String line;
+        int i = 1;
+        try {
+            while ((line = br.readLine()) != null) {
+                try {
+                    ParsedString parsedString = SmallParser.parse(line);
+                    boolean add = uniqueLines.add(parsedString);
+                    if (!add) {
+                        //Здесь невалид строка является дублем.
+                        if (mapInvalidStrings!=null)
+                            mapInvalidStrings.put(i,"Duplicate: "+line);
+                        //mapInvalidStrings.add(line);
+                    }
+                } catch (InvalidStringException e) {
+                    //Здесь невалид строка не прошла парсинг.
+                    if (mapInvalidStrings!=null)
+                        mapInvalidStrings.put(i,"Invalid line: "+line);
+                }
+                i++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return uniqueLines;
+    }
+
 
     private static void bufferCloser(BufferedReader br) {
         try {
@@ -113,7 +170,7 @@ public class LittleChinaProgrammerLivesThere {
         return br;
     }
 
-    public static void saveResultToFile(Processor proc, List<Set<String>> disjointGroups){
+    public static void saveResultToFile(Processor proc, List<Set<ParsedString>> disjointGroups){
         try(PrintWriter out = new PrintWriter("processResult.txt")){
             int i = countGroupsWithMoreThanOneElement(proc, disjointGroups);
             out.println("-------------------------------------------");
@@ -125,12 +182,12 @@ public class LittleChinaProgrammerLivesThere {
         }
     }
 
-    private static void saveGroupsToFile(List<Set<String>> disjointGroups, PrintWriter out) {
+    private static void saveGroupsToFile(List<Set<ParsedString>> disjointGroups, PrintWriter out) {
         int i=1;
-        for (Iterator<Set<String>> iterator = disjointGroups.iterator(); iterator.hasNext();) {
+        for (Iterator<Set<ParsedString>> iterator = disjointGroups.iterator(); iterator.hasNext();) {
             out.println("Group "+i);
-            Set<String> group = iterator.next();
-            for (String string:group){
+            Set<ParsedString> group = iterator.next();
+            for (ParsedString string:group){
                 out.println(string);
             }
             i++;
@@ -139,7 +196,7 @@ public class LittleChinaProgrammerLivesThere {
         }
     }
 
-    private static int countGroupsWithMoreThanOneElement (Processor proc, List<Set<String>> disjointGroups){
+    private static int countGroupsWithMoreThanOneElement (Processor proc, List<Set<ParsedString>> disjointGroups){
         return disjointGroups.size() - proc.countOfGroupsWithSizeOne();
     }
 

@@ -1,5 +1,6 @@
 package utils;
 
+import model.ParsedString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -11,11 +12,11 @@ import java.util.List;
  */
 public class SmallParser {
 
-    public static String parse(String stringToParse) throws InvalidStringException {
+    public static ParsedString parse(String stringToParse) throws InvalidStringException {
         return getParsedLine(stringToParse);
     }
 
-    public static List<String> getStringsList(String currentString) {
+    private static List<String> getStringsList(String currentString) {
         List<String> items = new ArrayList<>();
         items.addAll(Arrays.asList(currentString.split(";")));
         if (items.size() < 3) {
@@ -32,12 +33,12 @@ public class SmallParser {
         return items;
     }
 
-    private static String getParsedLine(String stringToParse) throws InvalidStringException {
+    private static ParsedString getParsedLine(String stringToParse) throws InvalidStringException {
         String line = stringToParse.replaceAll("\"", "");
         if (checkSplittersCount(StringUtils.countMatches(line, ";"))) {
             List<String> items = getStringsList(line);
             if (checkNotNull(items) && checkSize(items))
-                return line;
+                return new ParsedString(items.get(0),items.get(1),items.get(2));
         }
         throw new InvalidStringException(line);
     }
