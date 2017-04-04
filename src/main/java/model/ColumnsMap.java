@@ -9,9 +9,9 @@ public class ColumnsMap {
 
     private int countOfGroupsWithSize1;
 
-    Map<String, Collection<ParsedString>> column1Map;
-    Map<String, Collection<ParsedString>> column2Map;
-    Map<String, Collection<ParsedString>> column3Map;
+    private Map<String, Collection<ParsedString>> column1Map;
+    private Map<String, Collection<ParsedString>> column2Map;
+    private Map<String, Collection<ParsedString>> column3Map;
 
     public ColumnsMap() {
         countOfGroupsWithSize1 = 0;
@@ -49,21 +49,20 @@ public class ColumnsMap {
     }
 
     public Set<ParsedString> performNonRecursiveDepthFirstSearch(ParsedString currentString, TripleStringsSet removedLines){
-        TripleStringsSet visitedElements = new TripleStringsSet();
+        TripleStringsSet alreadyProcessed = new TripleStringsSet();
         Set<ParsedString> currentGroup = new HashSet<>();
-        TripleStringsSet needToProcessSet = new TripleStringsSet(currentString);
+        TripleStringsSet needToProcess = new TripleStringsSet(currentString);
         boolean b1=true,b2=true,b3=true;
-        while (!needToProcessSet.isEmpty()) {
-            if (needToProcessSet.getColumn1StringsSet().iterator().hasNext())
-                b1 = searchBy1Column(currentGroup, needToProcessSet.getColumn1StringsSet().iterator().next(), removedLines, needToProcessSet, visitedElements);
-            if (needToProcessSet.getColumn2StringsSet().iterator().hasNext())
-                b2 = searchBy2Column(currentGroup, needToProcessSet.getColumn2StringsSet().iterator().next(), removedLines, needToProcessSet, visitedElements);
-            if (needToProcessSet.getColumn3StringsSet().iterator().hasNext())
-                b3 = searchBy3Column(currentGroup, needToProcessSet.getColumn3StringsSet().iterator().next(), removedLines, needToProcessSet, visitedElements);
+        while (!needToProcess.isEmpty()) {
+            if (needToProcess.getColumn1StringsSet().iterator().hasNext())
+                b1 = searchBy1Column(currentGroup, needToProcess.getColumn1StringsSet().iterator().next(), removedLines, needToProcess, alreadyProcessed);
+            if (needToProcess.getColumn2StringsSet().iterator().hasNext())
+                b2 = searchBy2Column(currentGroup, needToProcess.getColumn2StringsSet().iterator().next(), removedLines, needToProcess, alreadyProcessed);
+            if (needToProcess.getColumn3StringsSet().iterator().hasNext())
+                b3 = searchBy3Column(currentGroup, needToProcess.getColumn3StringsSet().iterator().next(), removedLines, needToProcess, alreadyProcessed);
         }
-        if (b1 && b2 && b3 && currentGroup.add(currentString)) {
-                countOfGroupsWithSize1++;
-        }
+        if (b1 && b2 && b3 && currentGroup.add(currentString))
+            countOfGroupsWithSize1++;
         return currentGroup;
     }
 
@@ -138,9 +137,9 @@ public class ColumnsMap {
                     currentGroup.addAll(strings);
                     needToAddToGroup = false;
                     for (ParsedString parsedString : strings) {
-                        if (!parsedString.getB().equals("") && !removedSet.getColumn2StringsSet().contains(parsedString.getB()))
+                        if (!parsedString.getB().equals("") && !alreadyProcessed.getColumn2StringsSet().contains(parsedString.getB()))
                             needToProcess.getColumn2StringsSet().add(parsedString.getB());
-                        if (!parsedString.getC().equals("") && !removedSet.getColumn3StringsSet().contains(parsedString.getC()))
+                        if (!parsedString.getC().equals("") && !alreadyProcessed.getColumn3StringsSet().contains(parsedString.getC()))
                             needToProcess.getColumn3StringsSet().add(parsedString.getC());
                     }
                 }
@@ -151,51 +150,51 @@ public class ColumnsMap {
         return needToAddToGroup;
     }
 
-    private boolean searchBy2Column(Set<ParsedString> currentGroup, String currentColumn2String, TripleStringsSet removedSet, TripleStringsSet setToVisit, TripleStringsSet visitedLines) {
+    private boolean searchBy2Column(Set<ParsedString> currentGroup, String currentColumn2String, TripleStringsSet removedSet, TripleStringsSet needToProcess, TripleStringsSet alreadyProcessed) {
         boolean needToAddToGroup=false;
         Collection<ParsedString> strings = column2Map.get(currentColumn2String);
         if (!currentColumn2String.equals("")){
             boolean containInRemovedSet = !removedSet.getColumn2StringsSet().add(currentColumn2String);
             if (!containInRemovedSet){
                 needToAddToGroup = true;
-                if (strings != null && strings.size() != 1  && !visitedLines.getColumn2StringsSet().contains(currentColumn2String)) {
+                if (strings != null && strings.size() != 1  && !alreadyProcessed.getColumn2StringsSet().contains(currentColumn2String)) {
                     currentGroup.addAll(strings);
                     needToAddToGroup = false;
                     for (ParsedString parsedString : strings) {
-                        if (!parsedString.getA().equals("") && !removedSet.getColumn1StringsSet().contains(parsedString.getA()))
-                            setToVisit.getColumn1StringsSet().add(parsedString.getA());
-                        if (!parsedString.getC().equals("") && !removedSet.getColumn3StringsSet().contains(parsedString.getC()))
-                            setToVisit.getColumn3StringsSet().add(parsedString.getC());
+                        if (!parsedString.getA().equals("") && !alreadyProcessed.getColumn1StringsSet().contains(parsedString.getA()))
+                            needToProcess.getColumn1StringsSet().add(parsedString.getA());
+                        if (!parsedString.getC().equals("") && !alreadyProcessed.getColumn3StringsSet().contains(parsedString.getC()))
+                            needToProcess.getColumn3StringsSet().add(parsedString.getC());
                     }
                 }
             }
-            setToVisit.getColumn2StringsSet().remove(currentColumn2String);
-            visitedLines.getColumn2StringsSet().add(currentColumn2String);
+            needToProcess.getColumn2StringsSet().remove(currentColumn2String);
+            alreadyProcessed.getColumn2StringsSet().add(currentColumn2String);
 
         }
         return needToAddToGroup;
     }
 
-    private boolean searchBy3Column(Set<ParsedString> currentGroup, String currentColumn3String, TripleStringsSet removedSet, TripleStringsSet setToVisit, TripleStringsSet visitedLines) {
+    private boolean searchBy3Column(Set<ParsedString> currentGroup, String currentColumn3String, TripleStringsSet removedSet, TripleStringsSet needToProcess, TripleStringsSet alreadyProcessed) {
         boolean needToAddToGroup=false;
         Collection<ParsedString> strings = column3Map.get(currentColumn3String);
         if (!currentColumn3String.equals("")){
             boolean containInRemovedSet = !removedSet.getColumn3StringsSet().add(currentColumn3String);
             if (!containInRemovedSet){
                 needToAddToGroup = true;
-                if (strings != null && strings.size() != 1  && !visitedLines.getColumn3StringsSet().contains(currentColumn3String)) {
+                if (strings != null && strings.size() != 1  && !alreadyProcessed.getColumn3StringsSet().contains(currentColumn3String)) {
                     currentGroup.addAll(strings);
                     needToAddToGroup = false;
                     for (ParsedString parsedString : strings) {
-                        if (!parsedString.getA().equals("") && !removedSet.getColumn1StringsSet().contains(parsedString.getA()))
-                            setToVisit.getColumn1StringsSet().add(parsedString.getA());
-                        if (!parsedString.getB().equals("") && !removedSet.getColumn2StringsSet().contains(parsedString.getB()))
-                            setToVisit.getColumn2StringsSet().add(parsedString.getB());
+                        if (!parsedString.getA().equals("") && !alreadyProcessed.getColumn1StringsSet().contains(parsedString.getA()))
+                            needToProcess.getColumn1StringsSet().add(parsedString.getA());
+                        if (!parsedString.getB().equals("") && !alreadyProcessed.getColumn2StringsSet().contains(parsedString.getB()))
+                            needToProcess.getColumn2StringsSet().add(parsedString.getB());
                     }
                 }
             }
-            setToVisit.getColumn3StringsSet().remove(currentColumn3String);
-            visitedLines.getColumn3StringsSet().add(currentColumn3String);
+            needToProcess.getColumn3StringsSet().remove(currentColumn3String);
+            alreadyProcessed.getColumn3StringsSet().add(currentColumn3String);
         }
         return needToAddToGroup;
     }
